@@ -6,11 +6,11 @@ from sys import stderr, stdout, stdin, exit
 import os.path
 import logging
 import codecs
+
 import runipy
-
 from runipy.notebook_runner import NotebookRunner, NotebookError
-from IPython.nbformat.current import read, write
 
+from IPython.nbformat.current import read, write
 from IPython.config import Config
 from IPython.nbconvert.exporters.html import HTMLExporter
 
