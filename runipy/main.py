@@ -6,9 +6,12 @@ from sys import stderr, stdout, stdin, exit
 import os.path
 import logging
 import codecs
+import unittest
+import copy
 
 import runipy
 from runipy.notebook_runner import NotebookRunner, NotebookError
+from runipy.testbase import TestRunipyBase
 
 from IPython.nbformat.current import read, write
 from IPython.config import Config
@@ -47,6 +50,8 @@ def main():
             help="do not change directory to notebook's at kernel startup")
     parser.add_argument('--profile-dir',
             help="set the profile location directly")
+    parser.add_argument('--check-outputs', '-c', action='store_true',
+            help="check input_file and output_file cell outputs are equal")
     args = parser.parse_args()
 
 
@@ -84,6 +89,8 @@ def main():
 
     logging.info('Reading notebook %s', payload.name)
     nb = read(payload, 'json')
+    if args.check_outputs:
+        nb_origin = copy.deepcopy(nb)
     nb_runner = NotebookRunner(nb, args.pylab, args.matplotlib, profile_dir, working_dir)
 
     exit_status = 0
@@ -124,6 +131,22 @@ def main():
 
     if exit_status != 0:
         logging.warning('Exiting with nonzero exit status')
+
+    if args.check_outputs:
+        class TestOutputs(TestRunipyBase):
+            def runTest(self):
+                self.assert_notebooks_equal(nb_origin, nb_runner.nb)
+        result = unittest.TestResult()
+        TestOutputs().run(result)
+        errors = [ s for (inst, s) in result.errors + result.failures ]
+        if errors:
+            print("="*70)
+            print("input_file and output_file cell outputs are not equal. " \
+                  "Traceback is:\n")
+            print('\n'.join(errors))
+            print("="*70)
+            exit_status = 2
+
     exit(exit_status)
 
 
