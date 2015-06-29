@@ -14,6 +14,8 @@ class TestRunipyBase(unittest.TestCase):
             # results between IPython2 and IPython3 (which prints "object" instead
             # of "at [id]"
             cell['text'] = re.sub('at 0x[0-9a-f]{7,12}', 'object', cell['text'])
+            cell['text'] = re.sub('matplotlib.figure.Figure object\w{3}',
+                                  'matplotlib.figure.Figure object', cell['text'])
         if 'traceback' in cell:
             cell['traceback'] = [re.sub('\x1b\\[[01];\\d\\dm', '', line) for line in cell['traceback']]
             # rejoin lines, so it's one string to compare
