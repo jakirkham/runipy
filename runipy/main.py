@@ -27,6 +27,8 @@ def main():
             help='.ipynb file to save cell output to')
     parser.add_argument('--quiet', '-q', action='store_true',
             help='don\'t print anything unless things go wrong')
+    parser.add_argument('--kernel', default=None,
+            help="choose kernel (python2, python3, julia-0.3, julia-0.4, ...")
     parser.add_argument('--overwrite', '-o', action='store_true',
             help='write notebook output back to original notebook')
     parser.add_argument('--html', nargs='?', default=False,
@@ -84,7 +86,7 @@ def main():
 
     logging.info('Reading notebook %s', payload.name)
     nb = read(payload, 'json')
-    nb_runner = NotebookRunner(nb, args.pylab, args.matplotlib, profile_dir, working_dir)
+    nb_runner = NotebookRunner(nb, args.pylab, args.matplotlib, profile_dir, working_dir, kernel=args.kernel)
 
     exit_status = 0
     try:

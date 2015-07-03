@@ -14,6 +14,7 @@ import os
 
 from IPython.nbformat.current import NotebookNode
 from IPython.kernel import KernelManager
+from IPython.kernel.kernelspec import KernelSpecManager
 
 
 class NotebookError(Exception):
@@ -36,7 +37,7 @@ class NotebookRunner(object):
     }
 
 
-    def __init__(self, nb, pylab=False, mpl_inline=False, profile_dir=None, working_dir=None):
+    def __init__(self, nb, pylab=False, mpl_inline=False, profile_dir=None, working_dir=None, kernel=None):
         self.km = KernelManager()
 
         args = []
@@ -55,6 +56,15 @@ class NotebookRunner(object):
 
         if working_dir:
             os.chdir(working_dir)
+
+        if kernel is not None:
+            logging.info("Starting {0} kernel".format(kernel))
+            ksm = KernelSpecManager()
+            kernel_specs = ksm.find_kernel_specs()
+            if not kernel in kernel_specs:
+                logging.info("Installed kernels: {0}".format(', '.join(kernel_specs)))
+            # throws NoSuchKernel when not found
+            self.km.kernel_spec = ksm.get_kernel_spec(kernel)
 
         self.km.start_kernel(extra_arguments = args)
         
