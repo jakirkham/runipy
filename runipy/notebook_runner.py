@@ -37,7 +37,7 @@ class NotebookRunner(object):
     }
 
 
-    def __init__(self, nb, pylab=False, mpl_inline=False, profile_dir=None, working_dir=None, kernel=None, port=8888):
+    def __init__(self, nb, pylab=False, mpl_inline=False, profile_dir=None, working_dir=None, kernel=None, port=None):
         self.km = KernelManager()
 
         args = []
@@ -66,9 +66,10 @@ class NotebookRunner(object):
             # throws NoSuchKernel when not found
             self.km.kernel_spec = ksm.get_kernel_spec(kernel)
 
-        args.append('--port={0}'.format(port))
-
-        self.km.start_kernel(extra_arguments=args)
+        if port is None:
+            self.km.start_kernel(extra_arguments=args)
+        else:
+            self.km.start_kernel(extra_arguments=args, port=port)
         
         os.chdir(cwd)
 

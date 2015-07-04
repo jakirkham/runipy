@@ -34,7 +34,7 @@ def main():
             help='turn on debug messages')
     parser.add_argument('--kernel', default=None,
             help="choose kernel (python2, python3, julia-0.3, julia-0.4, ...")
-    parser.add_argument('--port', default=8888,
+    parser.add_argument('--port', default=None,
             help="choose port number for kernel")
     parser.add_argument('--overwrite', '-o', action='store_true',
             help='write notebook output back to original notebook')
