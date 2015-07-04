@@ -32,6 +32,8 @@ def main():
             help='don\'t print anything unless things go wrong')
     parser.add_argument('--kernel', default=None,
             help="choose kernel (python2, python3, julia-0.3, julia-0.4, ...")
+    parser.add_argument('--port', default=8888,
+            help="choose port number for kernel")
     parser.add_argument('--overwrite', '-o', action='store_true',
             help='write notebook output back to original notebook')
     parser.add_argument('--html', nargs='?', default=False,
@@ -105,7 +107,7 @@ def run_notebook(args):
 
     logging.info('Reading notebook %s', payload.name)
     nb = read(payload, 'json')
-    nb_runner = NotebookRunner(nb, args.pylab, args.matplotlib, profile_dir, working_dir, kernel=args.kernel)
+    nb_runner = NotebookRunner(nb, args.pylab, args.matplotlib, profile_dir, working_dir, kernel=args.kernel, port=args.port)
 
     exit_status = 0
     try:
