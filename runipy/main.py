@@ -13,10 +13,13 @@ from IPython.nbformat.current import read, write
 
 from IPython.config import Config
 from IPython.nbconvert.exporters.html import HTMLExporter
+from IPython.nbconvert.exporters.rst import RSTExporter
+
+log_format = '%(asctime)s %(levelname)s: %(message)s'
+log_datefmt = '%m/%d/%Y %I:%M:%S %p'
 
 def main():
-    log_format = '%(asctime)s %(levelname)s: %(message)s'
-    log_datefmt = '%m/%d/%Y %I:%M:%S %p'
+    """Command line interface for notebook runner."""
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--version', '-v', action='version', version=runipy.__version__,
@@ -35,6 +38,8 @@ def main():
             help='output an HTML snapshot of the notebook')
     parser.add_argument('--template', nargs='?', default=False,
             help='template to use for HTML output')
+    parser.add_argument('--rst', nargs='?', default=False,
+            help='output an RST snapshot of the notebook')
     parser.add_argument('--pylab', action='store_true',
             help='start notebook with pylab enabled')
     parser.add_argument('--matplotlib', action='store_true',
@@ -50,8 +55,22 @@ def main():
     parser.add_argument('--profile-dir',
             help="set the profile location directly")
     args = parser.parse_args()
+    exit_status = run_notebook(args)
+    if exit_status != 0:
+        logging.warning('Exiting with nonzero exit status')
+    exit(exit_status)
 
 
+def run_notebook(args):
+    """Run notebook. Input parameters are in args. To run this inside script,
+    put args to some object, i.e.
+
+    >>> class Args(object): pass
+    >>> args = Args()
+    >>> args.output_file = ...
+    >>> exit_status = run_notebook(args)
+
+    """
     if args.overwrite:
         if args.output_file is not None:
             print('Error: output_filename must not be provided if '
@@ -122,11 +141,22 @@ def main():
         output, resources = exporter.from_notebook_node(nb_runner.nb)
         codecs.open(args.html, 'w', encoding='utf-8').write(output)
 
-    nb_runner.shutdown_kernel()
+    if args.rst is not False:
+        if args.rst is None:
+            # if --rst is given but no filename is provided,
+            # come up with a sane output name based on the
+            # input filename
+            if args.input_file.endswith('.ipynb'):
+                args.rst = args.input_file[:-6] + '.rst'
+            else:
+                args.rst = args.input_file + '.rst'
+        exporter = RSTExporter()
+        logging.info("Saving RST snapshot to %s" % args.rst)
+        output, resources = exporter.from_notebook_node(nb_runner.nb)
+        codecs.open(args.rst, "w", encoding="utf-8").write(output)
 
-    if exit_status != 0:
-        logging.warning('Exiting with nonzero exit status')
-    exit(exit_status)
+    nb_runner.shutdown_kernel()
+    return exit_status
 
 
 if __name__ == '__main__':
