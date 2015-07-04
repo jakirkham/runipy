@@ -66,7 +66,9 @@ class NotebookRunner(object):
             # throws NoSuchKernel when not found
             self.km.kernel_spec = ksm.get_kernel_spec(kernel)
 
-        self.km.start_kernel(extra_arguments=args, port=port)
+        args.append('--port={0}'.format(port))
+
+        self.km.start_kernel(extra_arguments=args)
         
         os.chdir(cwd)
 

@@ -30,6 +30,8 @@ def main():
             help='.ipynb file to save cell output to')
     parser.add_argument('--quiet', '-q', action='store_true',
             help='don\'t print anything unless things go wrong')
+    parser.add_argument('--debug', action='store_true',
+            help='turn on debug messages')
     parser.add_argument('--kernel', default=None,
             help="choose kernel (python2, python3, julia-0.3, julia-0.4, ...")
     parser.add_argument('--port', default=8888,
@@ -57,13 +59,13 @@ def main():
     parser.add_argument('--profile-dir',
             help="set the profile location directly")
     args = parser.parse_args()
-    exit_status = run_notebook(args)
+    exit_status = run_notebook(parser, args)
     if exit_status != 0:
         logging.warning('Exiting with nonzero exit status')
     exit(exit_status)
 
 
-def run_notebook(args):
+def run_notebook(parser, args):
     """Run notebook. Input parameters are in args. To run this inside script,
     put args to some object, i.e.
 
@@ -83,8 +85,15 @@ def run_notebook(args):
 
     if not args.quiet:
         logging.basicConfig(level=logging.INFO, format=log_format, datefmt=log_datefmt)
+    if args.debug:
+        logging.basicConfig(level=logging.DEBUG, format=log_format, datefmt=log_datefmt)
 
     working_dir = None
+
+    if args.profile_dir:
+        profile_dir = os.path.expanduser(args.profile_dir)
+    else:
+        profile_dir = None
 
     if args.input_file == '-' or args.stdin:  # force stdin
         payload = stdin
@@ -99,11 +108,6 @@ def run_notebook(args):
 
     if args.no_chdir:
         working_dir = None
-
-    if args.profile_dir:
-        profile_dir = os.path.expanduser(args.profile_dir)
-    else:
-        profile_dir = None
 
     logging.info('Reading notebook %s', payload.name)
     nb = read(payload, 'json')
@@ -124,41 +128,59 @@ def run_notebook(args):
         print()
 
     if args.html is not False:
-        if args.html is None:
-            # if --html is given but no filename is provided,
-            # come up with a sane output name based on the
-            # input filename
-            if args.input_file.endswith('.ipynb'):
-                args.html = args.input_file[:-6] + '.html'
-            else:
-                args.html = args.input_file + '.html'
-
-        if args.template is False:
-            exporter = HTMLExporter()
-        else:
-            exporter = HTMLExporter(
-                    config=Config({'HTMLExporter':{'template_file':args.template, 'template_path': ['.', '/']}}))
-
-        logging.info('Saving HTML snapshot to %s' % args.html)
-        output, resources = exporter.from_notebook_node(nb_runner.nb)
-        codecs.open(args.html, 'w', encoding='utf-8').write(output)
+        export_to_html(nb_runner, args)
 
     if args.rst is not False:
-        if args.rst is None:
-            # if --rst is given but no filename is provided,
-            # come up with a sane output name based on the
-            # input filename
-            if args.input_file.endswith('.ipynb'):
-                args.rst = args.input_file[:-6] + '.rst'
-            else:
-                args.rst = args.input_file + '.rst'
-        exporter = RSTExporter()
-        logging.info("Saving RST snapshot to %s" % args.rst)
-        output, resources = exporter.from_notebook_node(nb_runner.nb)
-        codecs.open(args.rst, "w", encoding="utf-8").write(output)
+        export_to_rst(nb_runner, args)
 
     nb_runner.shutdown_kernel()
     return exit_status
+
+
+def export_to_html(nb_runner, args):
+    """Export notebook to html format."""
+    if args.html is None:
+        # if --html is given but no filename is provided,
+        # come up with a sane output name based on the
+        # input filename
+        if args.input_file.endswith('.ipynb'):
+            args.html = args.input_file[:-6] + '.html'
+        else:
+            args.html = args.input_file + '.html'
+
+    if args.template is False:
+        exporter = HTMLExporter()
+    else:
+        exporter = HTMLExporter(
+            config=Config({'HTMLExporter':{'template_file':args.template, 'template_path': ['.', '/']}}))
+
+    logging.info('Saving HTML snapshot to %s' % args.html)
+    # output, resources = exporter.from_notebook_node(nb_runner.nb)
+    # codecs.open(args.html, 'w', encoding='utf-8').write(output)
+    with codecs.open(args.html, "w", encoding="utf-8") as fh:
+        for worksheet in nb_runner.nb.worksheets:
+            output, resources = exporter.from_notebook_node(worksheet)
+            fh.write(output)
+
+
+def export_to_rst(nb_runner, args):
+    """Export notebook to rst format."""
+    if args.rst is None:
+        # if --rst is given but no filename is provided,
+        # come up with a sane output name based on the
+        # input filename
+        if args.input_file.endswith('.ipynb'):
+            args.rst = args.input_file[:-6] + '.rst'
+        else:
+            args.rst = args.input_file + '.rst'
+    exporter = RSTExporter()
+    logging.info("Saving RST snapshot to %s" % args.rst)
+    #output, resources = exporter.from_notebook_node(nb_runner.nb)
+    #codecs.open(args.rst, "w", encoding="utf-8").write(output)
+    with codecs.open(args.rst, "w", encoding="utf-8") as fh:
+        for worksheet in nb_runner.nb.worksheets:
+            output, resources = exporter.from_notebook_node(worksheet)
+            fh.write(output)
 
 
 if __name__ == '__main__':
