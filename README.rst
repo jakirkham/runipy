@@ -1,3 +1,7 @@
+|Travis Build Status|
+
+--------------
+
 ``runipy``: run IPython as a script
 =====================================
 
@@ -116,3 +120,5 @@ Gustavo Bragança, Tobias Brandt, Andrea Zonca, Aaron O'Leary, Simon Guillot,
 Fernando Correia, Takashi Nishibayashi, Simon Conseil, and Thomas French
 for patches, documentation fixes, and suggestions.
 
+.. |Travis Build Status| image:: https://travis-ci.org/paulgb/runipy.svg?branch=master
+    :target: https://travis-ci.org/paulgb/runipy
