@@ -52,6 +52,7 @@ class NotebookRunner(object):
         ('image/png', 'png'),
         ('text/plain', 'text'),
         ('text/html', 'html'),
+        ('text/markdown', 'text'),
         ('text/latex', 'latex'),
         ('application/javascript', 'html'),
         ('image/svg+xml', 'svg'),
