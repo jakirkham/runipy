@@ -75,7 +75,7 @@ class TestRunipy(unittest.TestCase):
         ):
             for k in set(expected_out).union(actual_out):
                 if k == 'outputs':
-                    self.assertEqual(len(expected_out[k]), len(actual_out[k]))
+                    self.assertEqual(len(expected_out.get(k, [])), len(actual_out.get(k, [])))
                     for e, a in zip(expected_out[k], actual_out[k]):
                         e = self.prepare_cell(e)
                         a = self.prepare_cell(a)
