@@ -47,15 +47,15 @@ class NotebookRunner(object):
     # uses short labels for different cell types. We'll use this to
     # map from kernel types to notebook format types.
 
-    MIME_MAP = {
-        'image/jpeg': 'jpeg',
-        'image/png': 'png',
-        'text/plain': 'text',
-        'text/html': 'html',
-        'text/latex': 'latex',
-        'application/javascript': 'html',
-        'image/svg+xml': 'svg',
-    }
+    MIME_MAP = dict([
+        ('image/jpeg', 'jpeg'),
+        ('image/png', 'png'),
+        ('text/plain', 'text'),
+        ('text/html', 'html'),
+        ('text/latex', 'latex'),
+        ('application/javascript', 'html'),
+        ('image/svg+xml', 'svg'),
+    ])
 
     def __init__(
             self,
