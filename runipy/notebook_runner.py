@@ -133,8 +133,13 @@ class NotebookRunner(object):
 
     def run_cell(self, cell):
         """Run a notebook cell and update the output of that cell in-place."""
-        logging.info('Running cell:\n%s\n', cell.input)
-        self.kc.execute(cell.input)
+        if 'input' in cell:
+            cell_source = cell.input
+        else:
+            cell_source = cell.source
+        logging.info('Running cell:\n%s\n', cell_source)
+
+        self.kc.execute(cell_source)
         reply = self.kc.get_shell_msg()
         status = reply['content']['status']
         traceback_text = ''
@@ -215,8 +220,13 @@ class NotebookRunner(object):
 
     def iter_code_cells(self):
         """Iterate over the notebook cells containing code."""
-        for ws in self.nb.worksheets:
-            for cell in ws.cells:
+        if 'worksheets' in self.nb:
+            for ws in self.nb.worksheets:
+                for cell in ws.cells:
+                    if cell.cell_type == 'code':
+                        yield cell
+        else:
+            for cell in self.nb.cells:
                 if cell.cell_type == 'code':
                     yield cell
 
