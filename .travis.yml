@@ -3,6 +3,9 @@ env:
    - PYTHON_VERSION="3.5"
    - PYTHON_VERSION="3.4"
    - PYTHON_VERSION="2.7"
+   - PYTHON_VERSION="3.5" IPYTHON_VERSION=5
+   - PYTHON_VERSION="3.4" IPYTHON_VERSION=5
+   - PYTHON_VERSION="2.7" IPYTHON_VERSION=5
    - PYTHON_VERSION="3.5" IPYTHON_VERSION=4
    - PYTHON_VERSION="3.4" IPYTHON_VERSION=4
    - PYTHON_VERSION="2.7" IPYTHON_VERSION=4
@@ -35,7 +38,8 @@ install:
    - touch $HOME/miniconda/envs/testenv/conda-meta/pinned
    - echo "python ${PYTHON_VERSION}.*" >> $HOME/miniconda/envs/testenv/conda-meta/pinned
    - if [ -v IPYTHON_VERSION ]; then echo "ipython ${IPYTHON_VERSION}.*" >> $HOME/miniconda/envs/testenv/conda-meta/pinned ; fi
-   - if [ -v IPYTHON_VERSION ]; then echo "ipython-notebook ${IPYTHON_VERSION}.*" >> $HOME/miniconda/envs/testenv/conda-meta/pinned ; fi
+   - if [ -v IPYTHON_VERSION ] && [ "${IPYTHON_VERSION}" -lt "5" ]; then echo "ipython-notebook ${IPYTHON_VERSION}.*" >> $HOME/miniconda/envs/testenv/conda-meta/pinned ; fi
+   - if [ -v IPYTHON_VERSION ] && [ "${IPYTHON_VERSION}" -gt "3" ]; then echo "notebook ${IPYTHON_VERSION}.*" >> $HOME/miniconda/envs/testenv/conda-meta/pinned ; fi
    - if [ -v IPYTHON_VERSION ]; then conda install ipython-notebook ; fi
    # Install coverage and coveralls to generate and submit test coverage results for coveralls.io.
    - echo "coverage 3.*" >> $HOME/miniconda/envs/testenv/conda-meta/pinned
